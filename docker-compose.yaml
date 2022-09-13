@@ -1,0 +1,71 @@
+---
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:1.21
+    ports:
+      - "8080:80"
+      - "8081:443"
+    depends_on:
+      - app
+    # environment:
+#   Optional: Specify SSL termination certificate & key
+#   Just drop your cert.pem and cert.key into folder 'deploy/nginx/certs'
+#      - NGINX_SSL_CERT=/certs/cert.pem
+#      - NGINX_SSL_CERT_KEY=/certs/cert.key
+    volumes:
+      - ./deploy/nginx/default.conf:/etc/nginx/templates/default.conf.template
+      - ./deploy/nginx/scripts:/docker-entrypoint.d/label-studio
+      - ./deploy/nginx/certs:/certs:ro
+      - source: static
+        target: /label-studio/label_studio
+        type: volume
+        volume:
+          nocopy: true
+    command: nginx -g "daemon off;"
+
+  app:
+    stdin_open: true
+    tty: true
+    image: heartexlabs/label-studio:v1.5.0
+    expose:
+      - "8080"
+    environment:
+      - DJANGO_DB=default
+      - POSTGRE_NAME=${RDS_DB_NAME}
+      - POSTGRE_USER=${RDS_USERNAME}
+      - POSTGRE_PASSWORD=${RDS_PASSWORD}
+      - POSTGRE_PORT=${RDS_PORT}
+      - POSTGRE_HOST=${RDS_HOSTNAME}
+      - LABEL_STUDIO_DISABLE_SIGNUP_WITHOUT_LINK=true
+      - LABEL_STUDIO_COPY_STATIC_DATA=true
+    volumes:
+      - /efs/data:/label-studio/data:rw
+      - source: static
+        target: /label-studio/static_volume
+        type: volume
+        volume:
+          nocopy: true
+
+  db:
+    profiles:
+      - local
+    image: postgres:11.5
+    hostname: db
+    restart: always
+    # Optional: Enable TLS on PostgreSQL
+    # Just drop your server.crt and server.key into folder 'deploy/pgsql/certs'
+    # NOTE: Both files must have permissions u=rw (0600) or less
+#   command: >
+#    -c ssl=on
+#    -c ssl_cert_file=/var/lib/postgresql/certs/server.crt
+#    -c ssl_key_file=/var/lib/postgresql/certs/server.key
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ${POSTGRES_DATA_DIR:-./postgres-data}:/var/lib/postgresql/data
+      - ./deploy/pgsql/certs:/var/lib/postgresql/certs:ro
+
+volumes:
+  static: {}

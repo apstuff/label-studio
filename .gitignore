@@ -75,3 +75,10 @@ docker-compose.override.yml
 .python_history
 .viminfo
 .bash_history
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+postgres-data/
