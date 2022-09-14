@@ -1,5 +1,9 @@
 # LabelStudio
 
+## URLs
+- prod: http://apb-labelstudio.us-east-1.elasticbeanstalk.com/
+- dev: http://apb-labelstudio-dev.us-east-1.elasticbeanstalk.com/
+
 ## Deployment
 - We use AWS Elastic Beanstalk (eb) to deploy labelstudio
 - eb can take a docker compose and create an app from it
