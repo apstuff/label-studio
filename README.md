@@ -4,7 +4,28 @@
 - prod: http://apb-labelstudio.us-east-1.elasticbeanstalk.com/
 - dev: http://apb-labelstudio-dev.us-east-1.elasticbeanstalk.com/
 
-## Deployment
+## Quickstart
+```bash
+git clone git@github.com:apstuff/label-studio.git
+cd label-studio
+git checkout eb-dev
+eb init
+# Region: us-east-1
+# Application to use: apb-labelstudio
+# Default environment, apb-labelstudio-dev
+# CodeCommit: No
+eb deploy
+```
+- This links the `eb-dev` branch to the `apb-labelstudio-dev` environment
+- Make changes to the code, commit them, and then use `eb deploy` to deploy a new version
+- To set up the release branch use these commands
+```bash
+git checkout eb-release
+eb use apb-labelstudio
+```
+
+## Initial Setup
+### Deployment
 - We use AWS Elastic Beanstalk (eb) to deploy labelstudio
 - eb can take a docker compose and create an app from it
     - ec2 instances, load balancer, ssh access, etc
@@ -16,7 +37,7 @@
     - apb-labelstudio
     - apb-labelstudio-dev
 
-## Setup
+### Setup
 - Install aws CLI and configure credentials
 ```bash
 brew install awscli
@@ -46,7 +67,7 @@ eb create
 - load balancer type: application
 - Spot fleet: Yes (defaults)
 
-### Setup Database
+#### Setup Database
 - Using AWS RDS
 - Go to console and follow this guide
   - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.managing.db.html#environments-cfg-rds-create
@@ -56,7 +77,7 @@ eb create
 - storage: 5GB
 - user/password: [in 1PW]
 
-### Health Checks
+#### Health Checks
 - Health checks are defined in `.ebextensions/health-check.config`
 - Fallback:
     - Labelstudio runs on :8080 responds with a 302 code
@@ -66,21 +87,21 @@ eb create
     # modify aws:elasticbeanstalk:environment:process:default
     ```
 
-### File Storage
+#### File Storage
 - Persistent EFS volume to hold imported data
 - Create EFS volume
     - defined in `.ebextensions/02-storage-efs-createfilesystem.config`
 - Mount EFS Volume
     - defined in `.ebextensions/03-storage-efs-mountfilesystem.config`
 
-### Deployment
+#### Deployment
 - Only committed changes are deployed
   - Can be overridden with `--staged` flag
 ```bash
 eb deploy
 ```
 
-### Set up Labelstudio username
+#### Set up Labelstudio username
 - SSH into one of the environment's instances
     - `eb ssh`
 - Create user
